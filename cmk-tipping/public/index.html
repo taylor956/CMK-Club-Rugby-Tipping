@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <title>CMK Club Rugby Tipping — Taranaki</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- ═══ AUTH PAGE ═══ -->
+<div id="auth-page" class="auth-page">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1><span>CMK</span> Rugby Tipping</h1>
+      <p>Taranaki Club Rugby</p>
+    </div>
+
+    <!-- Login Form -->
+    <form id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" required placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" required placeholder="Enter password" autocomplete="current-password">
+      </div>
+      <div id="login-error" class="form-error"></div>
+      <button type="submit" class="btn btn-primary mt-8">Sign In</button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="register-form" class="hidden">
+      <div class="form-group">
+        <label>Display Name</label>
+        <input type="text" id="reg-name" required placeholder="e.g. Beauden Barrett" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="reg-email" required placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" required minlength="6" placeholder="6+ characters" autocomplete="new-password">
+      </div>
+      <div id="reg-error" class="form-error"></div>
+      <button type="submit" class="btn btn-primary mt-8">Create Account</button>
+    </form>
+
+    <div class="form-toggle">
+      <span id="auth-toggle-text">Don't have an account?</span>
+      <a href="#" id="auth-toggle">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="app" class="hidden">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo"><span>CMK</span> Tipping</div>
+    <div class="header-actions">
+      <span class="user-badge" id="user-name-badge"></span>
+      <button class="btn-icon" id="btn-logout" title="Sign out">⏻</button>
+    </div>
+  </div>
+
+  <!-- ── Tipping Page ── -->
+  <div id="page-tip" class="page active">
+    <h2 class="page-title">Pick Your Winners</h2>
+
+    <div class="round-selector" id="round-selector"></div>
+
+    <div id="round-info" class="card mb-16 hidden">
+      <div class="card-header">
+        <span class="card-title" id="round-title"></span>
+        <span class="card-badge" id="round-badge"></span>
+      </div>
+      <div style="font-size:0.8rem;color:var(--text-dim)">
+        Deadline: <span id="round-deadline"></span>
+      </div>
+    </div>
+
+    <div id="fixtures-list"></div>
+
+    <button class="btn btn-primary mt-16 hidden" id="btn-submit-tips">
+      Lock In Tips
+    </button>
+  </div>
+
+  <!-- ── Leaderboard Page ── -->
+  <div id="page-leaderboard" class="page">
+    <h2 class="page-title">Leaderboard</h2>
+
+    <div class="points-banner" id="my-points-banner">
+      <div class="big-num" id="my-total-points">0</div>
+      <div class="label">Your Total Points</div>
+    </div>
+
+    <div id="leaderboard-list"></div>
+  </div>
+
+  <!-- ── Groups Page ── -->
+  <div id="page-groups" class="page">
+    <h2 class="page-title">Your Groups</h2>
+    <p class="page-subtitle">Create a group and share the code with mates to compare tips.</p>
+
+    <div class="flex gap-8 mb-16">
+      <button class="btn btn-primary btn-small" id="btn-create-group">+ Create</button>
+      <button class="btn btn-secondary btn-small" id="btn-join-group">Join Group</button>
+    </div>
+
+    <div id="groups-list"></div>
+
+    <!-- Group Leaderboard (shown when a group is selected) -->
+    <div id="group-leaderboard-section" class="hidden">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <button class="btn-icon" id="btn-back-groups">←</button>
+        <h3 id="group-lb-title" style="font-weight:700"></h3>
+      </div>
+      <div id="group-lb-code" class="mb-8" style="font-size:0.8rem;color:var(--text-dim)">
+        Share code: <span class="group-code" id="group-lb-code-val"></span>
+      </div>
+      <div id="group-leaderboard-list"></div>
+    </div>
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav class="nav-bar">
+    <a href="#" data-page="tip" class="active">
+      <span class="nav-icon">🏉</span>
+      Tips
+    </a>
+    <a href="#" data-page="leaderboard">
+      <span class="nav-icon">🏆</span>
+      Board
+    </a>
+    <a href="#" data-page="groups">
+      <span class="nav-icon">👥</span>
+      Groups
+    </a>
+  </nav>
+</div>
+
+<script src="/js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+</body>
+</html>
