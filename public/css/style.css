@@ -35,7 +35,7 @@ body {
 
 /* ── App Shell ── */
 #app {
-  max-width: 480px;
+  max-width: 600px;
   margin: 0 auto;
   padding-bottom: 80px;
 }
@@ -50,6 +50,8 @@ body {
   top: 0;
   z-index: 100;
   border-bottom: 1px solid var(--border);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .header .logo {
@@ -545,8 +547,26 @@ body {
 
 /* ── Responsive ── */
 @media (min-width: 768px) {
-  #app { max-width: 520px; }
-  .nav-bar { border-radius: 16px 16px 0 0; max-width: 520px; left: 50%; transform: translateX(-50%); }
+  #app { max-width: 600px; }
+  .header { max-width: 600px; }
+  .nav-bar {
+    border-radius: 16px 16px 0 0;
+    max-width: 600px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  .page { padding: 20px 24px 24px; }
+  .fixture-team .team-name { font-size: 0.95rem; }
+  .page-title { font-size: 1.6rem; }
+  .leaderboard-row { padding: 14px 18px; }
+}
+
+@media (min-width: 1024px) {
+  #app { max-width: 640px; }
+  .header { max-width: 640px; }
+  .nav-bar { max-width: 640px; }
 }
 
 /* ── Utility ── */
