@@ -88,6 +88,7 @@ def init_db():
             display_name TEXT NOT NULL,
             password_hash TEXT NOT NULL,
             is_admin INTEGER DEFAULT 0,
+            fav_team_id INTEGER REFERENCES teams(id),
             created_at TEXT DEFAULT (datetime('now'))
         );
         CREATE TABLE IF NOT EXISTS teams (
@@ -139,6 +140,14 @@ def init_db():
         );
     """)
 
+    # Migration: add fav_team_id if missing
+    try:
+        conn.execute("SELECT fav_team_id FROM users LIMIT 1")
+    except sqlite3.OperationalError:
+        conn.execute("ALTER TABLE users ADD COLUMN fav_team_id INTEGER REFERENCES teams(id)")
+        conn.commit()
+        print("  Migrated: added fav_team_id column")
+
     # Seed admin if none exists
     admin = conn.execute("SELECT id FROM users WHERE is_admin=1").fetchone()
     if not admin:
@@ -181,13 +190,14 @@ def api_register(handler):
     email = (data.get("email") or "").strip().lower()
     name = (data.get("display_name") or "").strip()
     pw = data.get("password", "")
+    fav_team_id = data.get("fav_team_id")
     if not email or not name or len(pw) < 6:
         return json_response(handler, {"error": "Email, name, and password (6+ chars) required"}, 400)
     conn = db()
     try:
         conn.execute(
-            "INSERT INTO users (email, display_name, password_hash) VALUES (?,?,?)",
-            (email, name, hash_password(pw))
+            "INSERT INTO users (email, display_name, password_hash, fav_team_id) VALUES (?,?,?,?)",
+            (email, name, hash_password(pw), fav_team_id)
         )
         conn.commit()
         user = conn.execute("SELECT id, is_admin FROM users WHERE email=?", (email,)).fetchone()
@@ -466,22 +476,40 @@ def admin_enter_result(handler, fixture_id):
         (home_score, away_score, fixture_id)
     )
     # Calculate points for all tips on this fixture
+    # Margin categories: 0 = draw, 1-12 = 1-12, 13+ = 13+
+    # Frontend sends: draw=0, 1-12=7, 13+=20
     fixture = conn.execute("SELECT * FROM fixtures WHERE id=?", (fixture_id,)).fetchone()
-    actual_winner = fixture["home_team_id"] if home_score > away_score else fixture["away_team_id"] if away_score > home_score else None
     actual_margin = abs(home_score - away_score)
+    is_draw = (home_score == away_score)
+    actual_winner = None if is_draw else (fixture["home_team_id"] if home_score > away_score else fixture["away_team_id"])
+
+    # Determine actual margin category
+    if is_draw:
+        actual_cat = "draw"
+    elif actual_margin <= 12:
+        actual_cat = "1-12"
+    else:
+        actual_cat = "13+"
 
     tips = conn.execute("SELECT * FROM tips WHERE fixture_id=?", (fixture_id,)).fetchall()
     for tip in tips:
         points = 0
-        if actual_winner and tip["predicted_winner_id"] == actual_winner:
+        pred_margin = tip["predicted_margin"]
+        # Determine predicted category from stored number
+        if pred_margin == 0:
+            pred_cat = "draw"
+        elif pred_margin <= 12:
+            pred_cat = "1-12"
+        else:
+            pred_cat = "13+"
+
+        if is_draw and pred_cat == "draw":
+            # Predicted draw correctly
+            points = 5  # 2 (correct result) + 3 (correct margin category)
+        elif not is_draw and tip["predicted_winner_id"] == actual_winner:
             points = 2  # Correct winner
-            margin_diff = abs(tip["predicted_margin"] - actual_margin)
-            if margin_diff == 0:
-                points += 3  # Exact margin bonus
-            elif margin_diff <= 3:
-                points += 2  # Close margin bonus
-            elif margin_diff <= 7:
-                points += 1  # Near margin bonus
+            if pred_cat == actual_cat:
+                points += 3  # Correct margin category bonus
         conn.execute("UPDATE tips SET points_earned=? WHERE id=?", (points, tip["id"]))
     conn.commit()
     conn.close()
